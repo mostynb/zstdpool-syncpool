@@ -27,8 +27,8 @@ type EncoderWrapper struct {
 	*zstd.Encoder
 }
 
-// NewEncoderPool returns a sync.Pool that provides objects that embed a
-// *zstd.Encoder.
+// NewEncoderPool returns a sync.Pool that provides EncoderWrapper objects
+// which embed a *zstd.Encoder.
 func NewEncoderPool(opts ...zstd.EOption) *sync.Pool {
 	p := &sync.Pool{}
 
