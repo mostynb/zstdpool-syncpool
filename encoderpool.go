@@ -27,13 +27,14 @@ type EncoderWrapper struct {
 	*zstd.Encoder
 }
 
-// NewEncoderPool returns a sync.Pool that provides EncoderWrapper objects
-// which embed a *zstd.Encoder.
-func NewEncoderPool(opts ...zstd.EOption) *sync.Pool {
+// NewEncoderPool returns a sync.Pool that provides EncoderWrapper
+// objects which embed a *zstd.Encoder. You probably want to include
+// zstd.WithEncoderConcurrency(1) in the list of options.
+func NewEncoderPool(options ...zstd.EOption) *sync.Pool {
 	p := &sync.Pool{}
 
 	p.New = func() interface{} {
-		e, _ := zstd.NewWriter(nil, opts...)
+		e, _ := zstd.NewWriter(nil, options...)
 		ew := &EncoderWrapper{Encoder: e}
 
 		runtime.SetFinalizer(ew, func(ew *EncoderWrapper) {

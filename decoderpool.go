@@ -73,13 +73,14 @@ func (w *decoderReadCloser) Close() error {
 	return nil
 }
 
-// NewDecoderPool returns a sync.Pool that provides DecoderWrapper objects,
-// which embed *zstd.Decoders.
-func NewDecoderPool(opts ...zstd.DOption) *sync.Pool {
+// NewDecoderPool returns a sync.Pool that provides DecoderWrapper
+// objects, which embed *zstd.Decoders. You probably want to include
+// zstd.WithDecoderConcurrency(1) in the list of options.
+func NewDecoderPool(options ...zstd.DOption) *sync.Pool {
 	p := &sync.Pool{}
 
 	p.New = func() interface{} {
-		d, _ := zstd.NewReader(nil, opts...)
+		d, _ := zstd.NewReader(nil, options...)
 		dw := &DecoderWrapper{
 			Decoder: d,
 			pool:    p,
