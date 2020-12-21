@@ -87,8 +87,7 @@ func NewDecoderPool(options ...zstd.DOption) *sync.Pool {
 		}
 
 		runtime.SetFinalizer(dw, func(dw *DecoderWrapper) {
-			// zstd.Decoder.Close returns quickly if it is already closed.
-			dw.Close()
+			dw.Decoder.Close()
 		})
 
 		return dw

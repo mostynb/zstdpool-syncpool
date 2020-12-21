@@ -38,8 +38,7 @@ func NewEncoderPool(options ...zstd.EOption) *sync.Pool {
 		ew := &EncoderWrapper{Encoder: e}
 
 		runtime.SetFinalizer(ew, func(ew *EncoderWrapper) {
-			// Ensure that resources are freed by the *zstd.Encoder.
-			ew.Close()
+			ew.Encoder.Close()
 		})
 
 		return ew
