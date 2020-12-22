@@ -23,7 +23,7 @@ import (
 decoderPool := syncpool.NewDecoderPool(zstd.WithDecoderConcurrency(1))
 
 // Get a DecoderWrapper and use it.
-decoder := decoderPool.Get().(*DecoderWrapper) 
+decoder := decoderPool.Get().(*syncpool.DecoderWrapper) 
 decoder.Reset(compressedDataReader)
 _, err = io.Copy(uncompressedDataWriter, decoder)
 
@@ -36,7 +36,7 @@ decoderPool.Put(decoder)
 encoderPool := syncpool.NewEncoderPool(zstd.WithEncoderConcurrency(1))
 
 // Get an EncoderWrapper and use it.
-encoder := encoderPool.Get().(*EncoderWrapper)
+encoder := encoderPool.Get().(*syncpool.EncoderWrapper)
 encoder.Reset(compressedDataWriter)
 _, err = io.Copy(encoder, uncompressedDataReader)
 
