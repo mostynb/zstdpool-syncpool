@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package zstdpool provides a non-leaky sync.Pool for
-// github.com/klauspost/compress/zstd's Encoder and Decoder types.
+// Package syncpool provides a non-leaky sync.Pool for
+// github.com/klauspost/compress/zstd's Encoder and Decoder types,
+// using wrappers (EncoderWrapper and DecoderWrapper).
 package syncpool
 
 import (
