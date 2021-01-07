@@ -47,10 +47,10 @@ type DecoderWrapper struct {
 // be reused), but instead resets it and places this *DecoderWrapper back in
 // the pool.
 func (w *DecoderWrapper) Close() {
-	// FIXME: https://github.com/klauspost/compress/issues/296
-	w.Decoder.Reset(nil)
-
-	w.pool.Put(w)
+	err := w.Decoder.Reset(nil)
+	if err != nil {
+		w.pool.Put(w)
+	}
 }
 
 // IOReadCloser returns an io.ReadCloser that will return this *DecoderWrapper
