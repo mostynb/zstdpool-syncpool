@@ -48,7 +48,7 @@ type DecoderWrapper struct {
 // the pool.
 func (w *DecoderWrapper) Close() {
 	err := w.Decoder.Reset(nil)
-	if err != nil {
+	if err == nil {
 		w.pool.Put(w)
 	}
 }
