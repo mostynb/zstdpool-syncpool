@@ -1,3 +1,5 @@
+[![godoc](https://godoc.org/github.com/mostynb/zstdpool-syncpool?status.svg)](http://godoc.org/github.com/mostynb/zstdpool-syncpool)
+
 # zstdpool-syncpool
 
 github.com/klauspost/compress/zstd is a native Go implementation of Zstandard,
@@ -11,7 +13,9 @@ and sync.Pool, which automatically frees resources if you forget to call
 
 Background: https://github.com/klauspost/compress/issues/264
 
-# Usage
+# Basic usage
+
+https://pkg.go.dev/github.com/mostynb/zstdpool-syncpool
 
 ```
 import (
@@ -22,8 +26,8 @@ import (
 // Create a sync.Pool which returns wrapped *zstd.Decoder's.
 decoderPool := syncpool.NewDecoderPool(zstd.WithDecoderConcurrency(1))
 
-// Get a DecoderWrapper and use it.
-decoder := decoderPool.Get().(*syncpool.DecoderWrapper) 
+// Get a *DecoderWrapper and use it.
+decoder := decoderPool.Get().(*syncpool.DecoderWrapper)
 decoder.Reset(compressedDataReader)
 _, err = io.Copy(uncompressedDataWriter, decoder)
 
@@ -35,7 +39,7 @@ decoderPool.Put(decoder)
 // Create a sync.Pool which returns wrapped *zstd.Endoder's.
 encoderPool := syncpool.NewEncoderPool(zstd.WithEncoderConcurrency(1))
 
-// Get an EncoderWrapper and use it.
+// Get an *EncoderWrapper and use it.
 encoder := encoderPool.Get().(*syncpool.EncoderWrapper)
 encoder.Reset(compressedDataWriter)
 _, err = io.Copy(encoder, uncompressedDataReader)
@@ -43,6 +47,41 @@ _, err = io.Copy(encoder, uncompressedDataReader)
 // Return the encoder to the pool. If we forget this, then the zstd.Encoder
 // won't leak resources.
 encoderPool.Put(encoder)
+```
+
+# Simplified usage
+
+If you would like to avoid type assertions, you can use `NewDecoderPoolWapper`
+and `NewEncoderPoolWrapper`:
+
+```
+import (
+	"github.com/klauspost/compress/zstd"
+	syncpool "github.com/mostynb/zstdpool-syncpool"
+)
+
+// Create a sync.Pool which returns wrapped *zstd.Decoder's.
+decoderPool := syncpool.NewDecoderPoolWrapper(zstd.WithDecoderConcurrency(1))
+
+// Get a *DecoderWrapper and use it.
+decoder := decoderPool.Get(compressedDataReader)
+_, err = io.Copy(uncompressedDataWriter, decoder)
+
+// Return the decoder to the pool. If we forget this, then the zstd.Decoder
+// won't leak resources.
+decoderPool.Put(decoder)
+
+// Create a sync.Pool which returns wrapped *zstd.Endoder's.
+encoderPool := syncpool.NewEncoderPoolWrapper(zstd.WithEncoderConcurrency(1))
+
+// Get an EncoderWrapper and use it.
+encoder := encoderPool.Get(compressedDataWriter)
+_, err = io.Copy(encoder, uncompressedDataReader)
+
+// Return the encoder to the pool. If we forget this, then the zstd.Encoder
+// won't leak resources.
+encoderPool.Put(encoder)
+
 ```
 
 # Contributing
