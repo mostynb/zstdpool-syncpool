@@ -15,6 +15,7 @@
 package syncpool
 
 import (
+	"io"
 	"runtime"
 	"sync"
 
@@ -45,4 +46,31 @@ func NewEncoderPool(options ...zstd.EOption) *sync.Pool {
 	}
 
 	return p
+}
+
+// EncoderPoolWrapper is a convenience wrapper for sync.Pool which only
+// accepts and returns *EncoderWrapper's.
+type EncoderPoolWrapper struct {
+	pool *sync.Pool
+}
+
+// Get returns an *EncoderWrapper that has been Reset to use w.
+func (e *EncoderPoolWrapper) Get(w io.Writer) *EncoderWrapper {
+	ew := e.pool.Get().(*EncoderWrapper)
+	ew.Reset(w)
+	return ew
+}
+
+// Put returns an *EncoderWrapper to the pool.
+func (e *EncoderPoolWrapper) Put(w *EncoderWrapper) {
+	w.Reset(nil)
+	e.pool.Put(w)
+}
+
+// NewEncoderPoolWapper returns an *EncoderPoolWrapper that provides
+// *EncoderWrapper objects that do not need to be type asserted.
+// As with NewEncoderPool, you probably want to include
+// zstd.WithEncoderConcurrency(1) in the list of options.
+func NewEncoderPoolWrapper(options ...zstd.EOption) *EncoderPoolWrapper {
+	return &EncoderPoolWrapper{pool: NewEncoderPool(options...)}
 }

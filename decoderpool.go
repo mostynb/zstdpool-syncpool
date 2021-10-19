@@ -96,3 +96,41 @@ func NewDecoderPool(options ...zstd.DOption) *sync.Pool {
 
 	return p
 }
+
+// DecoderPoolWrapper is a convenience wrapper for sync.Pool which only
+// accepts and returns *DecoderWrapper's.
+type DecoderPoolWrapper struct {
+	pool *sync.Pool
+}
+
+// Get returns a *DecoderWrapper that has been Reset to use r.
+func (d *DecoderPoolWrapper) Get(r io.Reader) *DecoderWrapper {
+	dw := d.pool.Get().(*DecoderWrapper)
+
+	err := dw.Reset(r)
+	if err != nil {
+		// Decoder.Reset only returns a non-nil error if Close has been
+		// called. But DecoderWrapper.Close() intentionally doesn't call
+		// Decoder.Close(), so this can only happen if a *DecoderWrapper
+		// is type-asserted back to a *Decoder.
+		panic(err)
+	}
+
+	return dw
+}
+
+// Put returns a *DecoderWrapper to the pool.
+func (d *DecoderPoolWrapper) Put(w *DecoderWrapper) {
+	err := w.Reset(nil)
+	if err == nil {
+		d.pool.Put(w)
+	}
+}
+
+// NewDecoderPoolWapper returns a *DecoderPoolWrapper that provides
+// *DecoderWrapper objects that do not need to be type asserted.
+// As with NewDecoderPool, you probably want to include
+// zstd.WithDecoderConcurrency(1) in the list of options.
+func NewDecoderPoolWrapper(options ...zstd.DOption) *DecoderPoolWrapper {
+	return &DecoderPoolWrapper{pool: NewDecoderPool(options...)}
+}
